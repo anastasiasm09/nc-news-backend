@@ -5,6 +5,7 @@ const db = require('../db/connection');
 const app = require('../app');
 const request = require('supertest');
 
+
 beforeEach(() => {
   return seed(testData);
 });
@@ -23,3 +24,22 @@ describe("GET /api", () => {
       });
   });
 });
+
+describe("GET /api/topics", () => {
+  test("200: returns an array of all of topics object", () => {
+    return request(app)
+    .get("/api/topics")
+    .expect(200)
+    .then(({body}) => {
+      const { topics } = body;
+      expect(Array.isArray(topics)).toBe(true);
+      expect(topics).toHaveLength(3)
+      topics.forEach((obj) => {
+        expect(obj).toMatchObject({
+          slug: expect.any(String),
+          description: expect.any(String),
+        })
+      })
+    })
+  })
+})
