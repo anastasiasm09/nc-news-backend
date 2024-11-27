@@ -79,7 +79,7 @@ describe("GET /api/articles/:article_id", () => {
   });
 
 describe("GET /api/articles", () => {
-  test('200: returns an array of article objects', () => {
+  test("200: returns an array of article objects", () => {
     return request(app)
     .get("/api/articles")
     .expect(200)
@@ -101,7 +101,7 @@ describe("GET /api/articles", () => {
       })
     })
   })
-  test('200: should return articles sorted by date in descending order', () => {
+  test("200: should return articles sorted by date in descending order", () => {
     return request(app)
     .get("/api/articles?sort_by=created_at&order=DESC")
     .expect(200)
@@ -123,4 +123,67 @@ describe("GET /api/articles", () => {
       })
     })
   })
-})
+  test("400: responds with 400 when sort_by column is invalid", () => {
+    return request(app)
+      .get("/api/articles?sort_by=invalid_column")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid sort_by query");
+      });
+  });
+  test("400: responds with 400 when order is invalid", () => {
+    return request(app)
+      .get("/api/articles?order=invalid_order")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid order query");
+      });
+  });
+});
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: returns an array of comments for the given article_id", () => {
+    return request(app)
+    .get("/api/articles/1/comments")
+    .expect(200)
+    .then(({ body }) => {
+      const { comments } = body;
+      expect(Array.isArray(comments)).toBe(true);
+      expect(comments).toBeSortedBy("created_at", { descending: true });
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+          });
+        });
+      });
+  });
+  test("200: returns an empty array when no comments exist for the article_id", () => {
+    return request(app)
+      .get("/api/articles/4/comments")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toEqual([]);
+      });
+  });
+  test("404: responds with 404 when the article_id does not exist", () => {
+    return request(app)
+      .get("/api/articles/999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
+  test("400: responds with 400 for invalid article_id type", () => {
+    return request(app)
+      .get("/api/articles/not-a-number/comments")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid article_id");
+      });
+  });
+});
