@@ -101,7 +101,7 @@ describe("GET /api/articles", () => {
       })
     })
   })
-  test('200: should return articles sorted by date in descending order', () => {
+  test("200: should return articles sorted by date in descending order", () => {
     return request(app)
     .get("/api/articles?sort_by=created_at&order=DESC")
     .expect(200)
@@ -123,4 +123,20 @@ describe("GET /api/articles", () => {
       })
     })
   })
+  test("400: responds with 400 when sort_by column is invalid", () => {
+    return request(app)
+      .get("/api/articles?sort_by=invalid_column")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid sort_by query");
+      });
+  });
+  test("400: responds with 400 when order is invalid", () => {
+    return request(app)
+      .get("/api/articles?order=invalid_order")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid order query");
+      });
+  });
 })
