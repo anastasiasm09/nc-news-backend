@@ -4,7 +4,7 @@ const seed = require('../db/seeds/seed');
 const db = require('../db/connection');
 const app = require('../app');
 const request = require('supertest');
-
+require('jest-sorted');
 
 beforeEach(() => seed(data));
 afterAll(() => db.end());
@@ -58,6 +58,7 @@ describe("GET /api/articles/:article_id", () => {
             });
         });
   });
+});
   test("400: response with an error message for an invalid article type", () => {
     return request(app)
       .get("/api/articles/not-a-number")
@@ -76,4 +77,50 @@ describe("GET /api/articles/:article_id", () => {
         expect(msg).toBe("Article not found");
       });
   });
+
+describe("GET /api/articles", () => {
+  test('200: returns an array of article objects', () => {
+    return request(app)
+    .get("/api/articles")
+    .expect(200)
+    .then(({body}) => {
+        const { articles } = body;
+        expect(Array.isArray(articles)).toBe(true);
+        expect(articles).toHaveLength(13)
+        articles.forEach((obj) => {
+            expect(obj).toMatchObject({
+                author: expect.any(String),
+                title: expect.any(String),
+                article_id: expect.any(Number),
+                topic: expect.any(String),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                article_img_url: expect.any(String),
+                comment_count: expect.any(String)
+        })
+      })
+    })
+  })
+  test('200: should return articles sorted by date in descending order', () => {
+    return request(app)
+    .get("/api/articles?sort_by=created_at&order=DESC")
+    .expect(200)
+    .then(({body}) => {
+        const { articles } = body;
+        expect(articles).toHaveLength(13);
+        expect(articles).toBeSortedBy('created_at', {descending: true} );
+        articles.forEach((obj) => {
+            expect(obj).toMatchObject({
+                author: expect.any(String),
+                title: expect.any(String),
+                article_id: expect.any(Number),
+                topic: expect.any(String),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                article_img_url: expect.any(String),
+                comment_count: expect.any(String)
+        })
+      })
+    })
+  })
 })
