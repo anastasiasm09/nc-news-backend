@@ -5,8 +5,10 @@ const {
   customErrorHandler,
   serverErrorHandler,
 } = require("./errors");
-const { getApi, getTopics } = require('./controllers/api.controller');
-const { getArticleById, getArticles, getComments, postCommentByArticleID, patchArticleVotes } = require('./controllers/articles.controller');
+const getApi = require('./controllers/api.controller');
+const getTopics = require('./controllers/topics.controller');
+
+const { getArticleById, getArticles, getComments, postCommentByArticleID, patchArticleVotes, deleteCommentById } = require('./controllers/articles.controller');
 
 app.use(express.json());
 
@@ -19,6 +21,8 @@ app.get("/api/articles/:article_id/comments", getComments);
 app.post("/api/articles/:article_id/comments", postCommentByArticleID);
 
 app.patch("/api/articles/:article_id", patchArticleVotes);
+
+app.delete("/api/comments/:comment_id", deleteCommentById);
 
 
 app.use(psqlErrorHandler);

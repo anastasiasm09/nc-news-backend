@@ -3,13 +3,8 @@ const db = require('../db/connection');
 
 
 exports.selectArticleById = (article_id) => {
-    let sqlQuery = 'SELECT * FROM articles';
-    const queryValues = [];
-
-    if (article_id) {
-        sqlQuery += ' WHERE article_id = $1';
-        queryValues.push(article_id);
-    }
+    let sqlQuery = 'SELECT * FROM articles WHERE article_id = $1';
+    const queryValues = [article_id];
 
     return db.query(sqlQuery, queryValues).then(({ rows }) => {
     if (rows.length === 0) {
@@ -109,7 +104,7 @@ exports.insertComment = (article_id, username, body) => {
 exports.updateArticleVotes = (article_id, inc_votes) => {
   return db
     .query(
-      "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *",
+      'UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *',
       [inc_votes, article_id]
     )
     .then(({ rows }) => {
@@ -117,5 +112,18 @@ exports.updateArticleVotes = (article_id, inc_votes) => {
         return Promise.reject({ status: 404, msg: "Article not found" });
       }
       return rows[0];
+    });
+};
+
+exports.removeCommentById = (comment_id) => {
+  return db
+    .query(
+      'DELETE FROM comments WHERE comment_id = $1 RETURNING *', [
+      comment_id,
+    ])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "Comment not found" });
+      }
     });
 };
