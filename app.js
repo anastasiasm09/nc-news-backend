@@ -29,4 +29,8 @@ app.use(psqlErrorHandler);
 app.use(customErrorHandler);
 app.use(serverErrorHandler);
 
+app.listen(3000, () => {
+  console.log(`Server listening on port 3000`)
+})
+
 module.exports = app;
