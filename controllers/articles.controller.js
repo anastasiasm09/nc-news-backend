@@ -1,12 +1,12 @@
 const comments = require('../db/data/test-data/comments');
-const { selectArticleById, selectArticles, selectComments } = require('../models/articles.model');
+const { selectArticleById, selectArticles, selectComments, insertComment } = require('../models/articles.model');
 
 
 exports.getArticleById = (req, res, next) => {
   const article_id = Number(req.params.article_id)
   
   if (isNaN(article_id)) {
-    return next({ status: 400, msg: 'Invalid data type'})
+    return res.status(400).send({msg: 'Invalid data type'})
   }
 
   selectArticleById(article_id)
@@ -30,7 +30,7 @@ exports.getComments = (req, res, next) => {
   const {article_id} = req.params;
 
   if (isNaN(article_id)) {
-    return next({ status: 400, msg: 'Invalid article_id'})
+    return res.status(400).send({msg: 'Invalid article_id'})
   }
 
   selectArticleById(article_id)
@@ -41,4 +41,17 @@ exports.getComments = (req, res, next) => {
     res.status(200).send({ comments })
   })
   .catch(next)
-}
+};
+
+exports.postCommentByArticleID = (req, res, next) => {
+
+  const { article_id } = req.params;
+  const { username, body } = req.body;
+
+
+  insertComment(article_id, username, body)
+    .then((comment) => {
+      res.status(201).send({ comment });
+    })
+    .catch(next)
+};

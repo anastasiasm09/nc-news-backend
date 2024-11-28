@@ -187,3 +187,49 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: successfully adds a comment for an article", () => {
+    return request(app)
+      .post("/api/articles/6/comments")
+      .send({ username: "butter_bridge", body: "This is a comment!" })
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.comment).toMatchObject({
+          comment_id: expect.any(Number),
+          author: "butter_bridge",
+          body: "This is a comment!",
+          article_id: 6,
+          votes: 0,
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("400: when the article_id is not a valid number", () => {
+    return request(app)
+      .post("/api/articles/not-a-number/comments")
+      .send({ username: "butter_bridge", body: "This is a comment" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid article_id");
+      });
+  });
+  test("404: when the article_id is valid but does not exist", () => {
+    return request(app)
+      .post("/api/articles/999/comments")
+      .send({ username: "butter_bridge", body: "This is a comment" })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
+  test("400: when the username or body is missing from the request body", () => {
+    return request(app)
+      .post("/api/articles/4/comments")
+      .send({ username: "butter_bridge" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Missing required fields: username and body");
+      });
+  });
+});
