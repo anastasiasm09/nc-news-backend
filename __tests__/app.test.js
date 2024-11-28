@@ -233,3 +233,50 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: successfully updated article when inc_votes is positive", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          article_id: 1,
+          votes: expect.any(Number),
+        });
+        expect(body.article.votes).toBe(101);
+      });
+  });
+  test("200: successfully updated article when inc_votes is negative", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: -1 })
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          article_id: 1,
+          votes: expect.any(Number),
+        });
+        expect(body.article.votes).toBe(99);
+      });
+  });
+  test("400: when inc_votes is not a number", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: "not-a-number" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad Request: inc_votes must be a number");
+      });
+  });
+  test("404: when article_id does not exist", () => {
+    return request(app)
+      .patch("/api/articles/999")
+      .send({ inc_votes: 1 })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
+});
