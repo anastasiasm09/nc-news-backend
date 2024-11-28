@@ -150,6 +150,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       const { comments } = body;
       expect(Array.isArray(comments)).toBe(true);
       expect(comments).toBeSortedBy("created_at", { descending: true });
+      expect(comments).toHaveLength(11)
         comments.forEach((comment) => {
           expect(comment).toMatchObject({
             comment_id: expect.any(Number),
@@ -157,7 +158,7 @@ describe("GET /api/articles/:article_id/comments", () => {
             created_at: expect.any(String),
             author: expect.any(String),
             body: expect.any(String),
-            article_id: expect.any(Number),
+            article_id: 1,
           });
         });
       });
@@ -183,7 +184,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/not-a-number/comments")
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Invalid article_id");
+        expect(body.msg).toBe("Invalid data type");
       });
   });
 });
@@ -277,6 +278,28 @@ describe("PATCH /api/articles/:article_id", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("Article not found");
+      });
+  });
+});
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: when the comment is successfully deleted", () => {
+    return request(app).delete("/api/comments/4").expect(204);
+  });
+  test("404: when the comment_id is valid but does not exist", () => {
+    return request(app)
+      .delete("/api/comments/999")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Comment not found");
+      });
+  });
+  test("400: when the comment_id is invalid", () => {
+    return request(app)
+      .delete("/api/comments/invalidID")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Invalid data type");
       });
   });
 });
