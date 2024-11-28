@@ -1,5 +1,5 @@
 const comments = require('../db/data/test-data/comments');
-const { selectArticleById, selectArticles, selectComments, insertComment } = require('../models/articles.model');
+const { selectArticleById, selectArticles, selectComments, insertComment, updateArticleVotes } = require('../models/articles.model');
 
 
 exports.getArticleById = (req, res, next) => {
@@ -54,4 +54,29 @@ exports.postCommentByArticleID = (req, res, next) => {
       res.status(201).send({ comment });
     })
     .catch(next)
+};
+
+exports.patchArticleVotes = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+
+  if (isNaN(article_id)) {
+    return res
+      .status(400)
+      .send({ msg: "Bad Request: article_id must be a number" });
+  }
+
+  if (typeof inc_votes !== "number") {
+    return res
+      .status(400)
+      .send({ msg: "Bad Request: inc_votes must be a number" });
+  }
+
+  updateArticleVotes(article_id, inc_votes)
+    .then((updatedArticle) => {
+      res.status(200).send({ article: updatedArticle });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
