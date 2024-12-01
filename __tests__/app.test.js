@@ -4,6 +4,8 @@ const seed = require('../db/seeds/seed');
 const db = require('../db/connection');
 const app = require('../app');
 const request = require('supertest');
+const users = require('../db/data/test-data/users');
+const articles = require('../db/data/test-data/articles');
 require('jest-sorted');
 
 beforeEach(() => seed(data));
@@ -139,6 +141,39 @@ describe("GET /api/articles", () => {
         expect(body.msg).toBe("Invalid order query");
       });
   });
+  test("200: returns an array of articles filtered by the given topic", () => {
+    return request(app)
+    .get("/api/articles?topic=cats")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(Array.isArray(articles)).toBe(true)
+        expect(articles).toHaveLength(1)
+        articles.forEach((article) => {
+          expect(article.topic).toBe('cats')
+        });
+      });
+  });
+  test("200: returns an empty array when no articles match the given topic", () => {
+    return request(app)
+      .get("/api/articles?topic=nonexistent")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body
+        expect(Array.isArray(articles)).toBe(true)
+        expect(articles).toHaveLength(0)
+      });
+  });
+  test('200: returns an array with all articles if the query is omitted', () => {
+    return request(app)
+    .get("/api/articles?topic=")
+    .expect(200)
+    .then(({ body }) => {
+      const { articles } = body
+      expect(Array.isArray(articles)).toBe(true)
+      expect(articles).toHaveLength(13)
+    });
+  });
 });
 
 describe("GET /api/articles/:article_id/comments", () => {
@@ -212,7 +247,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send({ username: "butter_bridge", body: "This is a comment" })
       .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe("Invalid article_id");
+        expect(body.msg).toBe("Invalid data type");
       });
   });
   test("404: when the article_id is valid but does not exist", () => {
@@ -301,5 +336,25 @@ describe("DELETE /api/comments/:comment_id", () => {
       .then(({ body }) => {
         expect(body.msg).toBe("Invalid data type");
       });
+  });
+});
+
+describe("GET /api/users", () => {
+  test("200: returns an array of all users objects", () => {
+    return request(app)
+    .get("/api/users")
+    .expect(200)
+    .then(({body}) => {
+      const { users } = body;
+      expect(Array.isArray(users)).toBe(true)
+      expect(users).toHaveLength(4)
+      users.forEach((obj) => {
+        expect(obj).toMatchObject({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String),
+        });
+      });
+    });
   });
 });

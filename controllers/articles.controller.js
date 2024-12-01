@@ -13,9 +13,9 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  const { sort_by, order } = req.query;
+  const { sort_by, order, topic } = req.query;
 
-  selectArticles(sort_by, order)
+  selectArticles(sort_by, order, topic)
     .then((articles) => {
       res.status(200).send({ articles });
     })
@@ -51,12 +51,6 @@ exports.postCommentByArticleID = (req, res, next) => {
 exports.patchArticleVotes = (req, res, next) => {
   const { article_id } = req.params;
   const { inc_votes } = req.body;
-
-  if (isNaN(article_id)) {
-    return res
-      .status(400)
-      .send({ msg: "Bad Request: article_id must be a number" });
-  }
 
   if (typeof inc_votes !== "number") {
     return res

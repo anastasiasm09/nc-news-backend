@@ -14,7 +14,7 @@ exports.selectArticleById = (article_id) => {
   });
 };
 
-exports.selectArticles = (sort_by = "created_at", order = "ASC") => {
+exports.selectArticles = (sort_by = "created_at", order = "ASC", topic) => {
     const validSortBy = [
       "author",
       "title",
@@ -27,6 +27,7 @@ exports.selectArticles = (sort_by = "created_at", order = "ASC") => {
     ];
 
     const validOrders = ["ASC", "DESC"]
+    const queryValues = [];
 
     if (!validSortBy.includes(sort_by)) {
         return Promise.reject({ status: 400, msg: 'Invalid sort_by query' })
@@ -38,19 +39,21 @@ exports.selectArticles = (sort_by = "created_at", order = "ASC") => {
   
     let sqlQuery = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.article_img_url, articles.votes,
     COUNT(comments.comment_id) AS comment_count
-    FROM articles 
-    LEFT JOIN comments 
-    ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id
+    FROM articles LEFT JOIN comments
+    ON articles.article_id = comments.article_id`
+
+    if (topic) {
+      sqlQuery += ` WHERE articles.topic = $1`;
+      queryValues.push(topic);
+    }
+
+    sqlQuery += ` GROUP BY articles.article_id
     ORDER BY ${sort_by} ${order}`;
 
-    return db.query(sqlQuery).then(({ rows }) => {
-        if (rows.length === 0) {
-            throw { status: 404, msg: "No articles found" };
-        }
-        return rows;
-    });
-}
+    return db.query(sqlQuery, queryValues).then(({ rows }) => {
+      return rows;
+        });
+      };
 
 exports.selectComments = (article_id) => {
     const sqlQuery = `
@@ -72,10 +75,6 @@ exports.insertComment = (article_id, username, body) => {
         status: 400,
         msg: "Missing required fields: username and body",
       });
-    }
-  
-    if (isNaN(article_id)) {
-      return Promise.reject({ status: 400, msg: "Invalid article_id" });
     }
   
     return db

@@ -7,6 +7,7 @@ const {
 } = require("./errors");
 const getApi = require('./controllers/api.controller');
 const getTopics = require('./controllers/topics.controller');
+const getUsers = require('./controllers/users.controller');
 
 const { getArticleById, getArticles, getComments, postCommentByArticleID, patchArticleVotes, deleteCommentById } = require('./controllers/articles.controller');
 
@@ -23,6 +24,8 @@ app.post("/api/articles/:article_id/comments", postCommentByArticleID);
 app.patch("/api/articles/:article_id", patchArticleVotes);
 
 app.delete("/api/comments/:comment_id", deleteCommentById);
+
+app.get("/api/users", getUsers);
 
 
 app.use(psqlErrorHandler);
