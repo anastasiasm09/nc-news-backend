@@ -1,8 +1,8 @@
-# Hello everyone.
+## Hello everyone.
 
 Welcome to my first backend project, and I'm excited to share it with you.
 
-# Project Summary
+## Project Summary
 
 This project is built using **Node.js** with **Express.js** for the server and **PostgreSQL** for the database.  
 Unit tests for API routes are implemented using the **Jest** framework and **Supertest** library to ensure functionality and proper error handling.  
